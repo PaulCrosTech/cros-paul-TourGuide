@@ -88,9 +88,16 @@ public class TourGuideService {
 		return providers;
 	}
 
+	// TODO : à corriger étape 2 du projet
+	// Pour le test unitaire le souci est donc ici, car dans le TU on boucle sur user.getVisitedLocations()
+	// et ici on rajoute de nouvelles visitedLocation, ce n'est pas trade safe
 	public VisitedLocation trackUserLocation(User user) {
+		// Récupère les coordonnées GPS du user
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+		// Ajoute les coordonnées GPS à la liste des coordonnées GPS du user
 		user.addToVisitedLocations(visitedLocation);
+		// Recalcul les rewards du user
+		// ici j'ai aussi un doute sur la concurrence, car on rajoute un nouveau reward
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
 	}
@@ -135,12 +142,27 @@ public class TourGuideService {
 			internalUserMap.put(userName, user);
 		});
 		logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
+
+		User a = internalUserMap.get("internalUser0");
+		System.out.println(a.getUserId() + " - " + a.getUserName() + " - " + a.getPhoneNumber() + " - "
+				+ a.getEmailAddress() + " - " + a.getLatestLocationTimestamp());
+		System.out.println(a.getVisitedLocations().stream()
+				.map(v -> v.location.latitude + " - " +
+						v.location.longitude + " - " +
+						v.timeVisited).collect(Collectors.toList())
+		);
+		System.out.println("User Rewards :" + a.getUserRewards().size());
+		System.out.println("Trip Deals :" + a.getTripDeals().size());
 	}
 
 	private void generateUserLocationHistory(User user) {
 		IntStream.range(0, 3).forEach(i -> {
-			user.addToVisitedLocations(new VisitedLocation(user.getUserId(),
-					new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
+			user.addToVisitedLocations(
+					new VisitedLocation(
+							user.getUserId(),
+							new Location(generateRandomLatitude(),generateRandomLongitude()),
+							getRandomTime())
+			);
 		});
 	}
 

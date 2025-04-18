@@ -47,7 +47,9 @@ public class TestRewardsService {
 		assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
 	}
 
-	@Disabled // Needs fixed - can throw ConcurrentModificationException
+	// TODO : à corriger étape 2 du projet
+	// Pourquoi c'est lent et pourquoi j'ai pas actual résult = 26 comme l'expected ?
+//	@Disabled // Needs fixed - can throw ConcurrentModificationException
 	@Test
 	public void nearAllAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -57,6 +59,8 @@ public class TestRewardsService {
 		InternalTestHelper.setInternalUserNumber(1);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
+		// Le pb ce situe ici, car calculateRewards est exécutée en tache de fond par le thread
+		// et calculateRewards essaie de modifier la liste des VisitedLocation en concurrence
 		rewardsService.calculateRewards(tourGuideService.getAllUsers().get(0));
 		List<UserReward> userRewards = tourGuideService.getUserRewards(tourGuideService.getAllUsers().get(0));
 		tourGuideService.tracker.stopTracking();

@@ -92,6 +92,7 @@ public class TestTourGuideService {
 		assertEquals(user.getUserId(), visitedLocation.userId);
 	}
 
+	// TODO : à corriger lors de l'étape 3 du projet
 	@Disabled // Not yet implemented
 	@Test
 	public void getNearbyAttractions() {
@@ -110,6 +111,7 @@ public class TestTourGuideService {
 		assertEquals(5, attractions.size());
 	}
 
+	// TODO : not set as a Test ?!
 	public void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
