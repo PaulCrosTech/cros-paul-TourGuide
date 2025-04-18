@@ -15,7 +15,8 @@ public class User {
     private String emailAddress;
     private Date latestLocationTimestamp;
     private List<VisitedLocation> visitedLocations = new ArrayList<>();
-    private List<UserReward> userRewards = new ArrayList<>();
+    // TODO : à corriger étape 2 du projet virer le final ?
+    private final List<UserReward> userRewards = new ArrayList<>();
     private UserPreferences userPreferences = new UserPreferences();
     private List<Provider> tripDeals = new ArrayList<>();
 
@@ -72,13 +73,10 @@ public class User {
 
     // TODO : à corriger étape 2 du projet (surement quelque chose à faire ici aussi)
     public void addUserReward(UserReward userReward) {
-
-
-        userRewards.add(userReward);
-
 //        if (userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
-//            userRewards.add(userReward);
-//        }
+        if (userRewards.stream().noneMatch(r -> r.attraction.attractionId.equals(userReward.attraction.attractionId))) {
+            userRewards.add(userReward);
+        }
     }
 
     public List<UserReward> getUserRewards() {

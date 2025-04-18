@@ -55,13 +55,11 @@ public class RewardsService {
 
 
                 // Vérifie qu'il n'a pas déjà eu le rewards pour cette attraction
-                if (user.getUserRewards()
-                        .stream()
-                        .filter(
-                                // ne faudrait il pas utiliser le attractionId ?
-                                r -> r.attraction.attractionName.equals(attraction.attractionName)
-                        )
-                        .count() == 0) {
+//                if (user.getUserRewards()
+//                        .stream()
+//                        .filter(r -> r.attraction.attractionName.equals(attraction.attractionName))
+//                        .count() == 0) {
+                if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionId.equals(attraction.attractionId))) {
                     System.out.println("Test 'Reward déjà attribué' : ✅");
                     // Vérifie que l'attraction est dans la zone de proximité
                     if (nearAttraction(visitedLocation, attraction)) {
