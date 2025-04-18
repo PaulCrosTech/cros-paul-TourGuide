@@ -73,9 +73,11 @@ public class User {
 
     // TODO : à corriger étape 2 du projet (surement quelque chose à faire ici aussi)
     public void addUserReward(UserReward userReward) {
-//        if (userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
         if (userRewards.stream().noneMatch(r -> r.attraction.attractionId.equals(userReward.attraction.attractionId))) {
+            System.out.println("Test 'Reward déjà attribué' : ✅");
             userRewards.add(userReward);
+//        } else {
+//            System.out.println("Test 'Reward déjà attribué' : ❌");
         }
     }
 
