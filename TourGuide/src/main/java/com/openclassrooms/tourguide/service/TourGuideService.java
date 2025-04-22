@@ -1,6 +1,6 @@
 package com.openclassrooms.tourguide.service;
 
-import com.openclassrooms.tourguide.dto.NearByAttractions;
+import com.openclassrooms.tourguide.dto.NearByAttractionsDto;
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
 import com.openclassrooms.tourguide.tracker.Tracker;
 import com.openclassrooms.tourguide.user.User;
@@ -10,9 +10,14 @@ import com.openclassrooms.tourguide.user.UserReward;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,6 +30,9 @@ import gpsUtil.location.VisitedLocation;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 
+/**
+ * Tour guide service
+ */
 @Service
 public class TourGuideService {
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
@@ -35,6 +43,11 @@ public class TourGuideService {
 	boolean testMode = true;
 	public static final int NB_CLOSEST_ATTRACTIONS = 5;
 
+	/**
+	 * Constructor
+	 * @param gpsUtil gpsUtil
+	 * @param rewardsService  rewardsService
+	 */
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
@@ -55,20 +68,38 @@ public class TourGuideService {
 		return user.getUserRewards();
 	}
 
+	/**
+	 * Get last visited location or the actual location
+	 * @param user the user to get the location for
+	 * @return the VisitedLocation
+	 */
 	public VisitedLocation getUserLocation(User user) {
 		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
 				: trackUserLocation(user);
 		return visitedLocation;
 	}
 
+	/**
+	 * Get the user by userName
+	 * @param userName the userName of the user
+	 * @return the User
+	 */
 	public User getUser(String userName) {
 		return internalUserMap.get(userName);
 	}
 
+	/**
+	 * Get all users
+	 * @return a list of all users
+	 */
 	public List<User> getAllUsers() {
 		return internalUserMap.values().stream().collect(Collectors.toList());
 	}
 
+	/**
+	 * Add a user to the internal user map
+	 * @param user the user to add
+	 */
 	public void addUser(User user) {
 		if (!internalUserMap.containsKey(user.getUserName())) {
 			internalUserMap.put(user.getUserName(), user);
@@ -84,6 +115,11 @@ public class TourGuideService {
 		return providers;
 	}
 
+	/**
+	 * Track user location and add it to the user's visited locations
+	 * @param user the user to track
+	 * @return the VisitedLocation object containing the user's location
+	 */
 	public VisitedLocation trackUserLocation(User user) {
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 		user.addToVisitedLocations(visitedLocation);
@@ -91,17 +127,35 @@ public class TourGuideService {
 		return visitedLocation;
 	}
 
+	private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+	public CompletableFuture<VisitedLocation> trackUserLocationV2(User user) {
+
+		return CompletableFuture.supplyAsync(
+				() -> {
+					System.out.println("trackUserLocationV2 user : " + Thread.currentThread().getName() + " - " + user.getUserName());
+					VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+					user.addToVisitedLocations(visitedLocation);
+					rewardsService.calculateRewards(user);
+					return visitedLocation;
+				}, executorService
+		);
+	}
+	public void shutdownExecutor() {
+		executorService.shutdown();
+	}
+
 	/**
 	 * Get NB_CLOSEST_ATTRACTIONS closest attractions to the user no matter how far away they are
 	 * @param visitedLocation visited location of the user
 	 * @return a list of NB_CLOSEST_ATTRACTIONS nearest attractions
 	 */
-	public List<NearByAttractions> getNearByAttractions(VisitedLocation visitedLocation) {
+	public List<NearByAttractionsDto> getNearByAttractions(VisitedLocation visitedLocation) {
 
-		TreeMap<Double, NearByAttractions> nearByAttractionsTreeMap = new TreeMap<>();
+		TreeMap<Double, NearByAttractionsDto> nearByAttractionsTreeMap = new TreeMap<>();
 		for (Attraction attraction : gpsUtil.getAttractions()) {
 			double distanceInMiles = rewardsService.getDistance(attraction, visitedLocation.location);
-			NearByAttractions nb = new NearByAttractions(
+			NearByAttractionsDto nb = new NearByAttractionsDto(
 					attraction.attractionName,
 					attraction.latitude,
 					attraction.longitude,

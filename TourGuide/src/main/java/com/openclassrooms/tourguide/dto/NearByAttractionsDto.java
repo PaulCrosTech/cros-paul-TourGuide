@@ -4,7 +4,7 @@ package com.openclassrooms.tourguide.dto;
 /**
  * This class represents a nearby attraction with its details.
  */
-public class NearByAttractions {
+public class NearByAttractionsDto {
 
     private String attractionName;
     private double attractionLatitude;
@@ -20,9 +20,9 @@ public class NearByAttractions {
      * @param distanceInMiles the distance in miles
      * @param rewardPoints the reward points
      */
-    public NearByAttractions(String attractionName, double attractionLatitude,
-                             double attractionLongitude, double distanceInMiles,
-                             double rewardPoints) {
+    public NearByAttractionsDto(String attractionName, double attractionLatitude,
+                                double attractionLongitude, double distanceInMiles,
+                                double rewardPoints) {
         this.attractionName = attractionName;
         this.attractionLatitude = attractionLatitude;
         this.attractionLongitude = attractionLongitude;

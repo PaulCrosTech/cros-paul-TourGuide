@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.UUID;
 
-import com.openclassrooms.tourguide.dto.NearByAttractions;
+import com.openclassrooms.tourguide.dto.NearByAttractionsDto;
 import org.junit.jupiter.api.Test;
 
 import gpsUtil.GpsUtil;
@@ -19,7 +19,6 @@ import com.openclassrooms.tourguide.user.User;
 import tripPricer.Provider;
 
 public class TestTourGuideService {
-
 	@Test
 	public void getUserLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -110,7 +109,7 @@ public class TestTourGuideService {
 		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
 
 		// When
-		List<NearByAttractions> attractions = tourGuideService.getNearByAttractions(visitedLocation);
+		List<NearByAttractionsDto> attractions = tourGuideService.getNearByAttractions(visitedLocation);
 		tourGuideService.tracker.stopTracking();
 
 		// Then
