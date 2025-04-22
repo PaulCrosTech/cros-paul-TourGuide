@@ -1,20 +1,15 @@
 package com.openclassrooms.tourguide.service;
 
+import com.openclassrooms.tourguide.dto.NearByAttractions;
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
 import com.openclassrooms.tourguide.tracker.Tracker;
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,12 +33,13 @@ public class TourGuideService {
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
+	public static final int NB_CLOSEST_ATTRACTIONS = 5;
 
 	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
-		
-		Locale.setDefault(Locale.US);
+
+        Locale.setDefault(Locale.US);
 
 		if (testMode) {
 			logger.info("TestMode enabled");
@@ -95,15 +91,31 @@ public class TourGuideService {
 		return visitedLocation;
 	}
 
-	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-		List<Attraction> nearbyAttractions = new ArrayList<>();
+	/**
+	 * Get NB_CLOSEST_ATTRACTIONS closest attractions to the user no matter how far away they are
+	 * @param visitedLocation visited location of the user
+	 * @return a list of NB_CLOSEST_ATTRACTIONS nearest attractions
+	 */
+	public List<NearByAttractions> getNearByAttractions(VisitedLocation visitedLocation) {
+
+		TreeMap<Double, NearByAttractions> nearByAttractionsTreeMap = new TreeMap<>();
 		for (Attraction attraction : gpsUtil.getAttractions()) {
-			if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-				nearbyAttractions.add(attraction);
-			}
+			double distanceInMiles = rewardsService.getDistance(attraction, visitedLocation.location);
+			NearByAttractions nb = new NearByAttractions(
+					attraction.attractionName,
+					attraction.latitude,
+					attraction.longitude,
+					distanceInMiles,
+					rewardsService.getRewardPoints(attraction.attractionId, visitedLocation.userId)
+			);
+			nearByAttractionsTreeMap.put(distanceInMiles,nb);
 		}
 
-		return nearbyAttractions;
+		return nearByAttractionsTreeMap
+				.values()
+				.stream()
+				.limit(NB_CLOSEST_ATTRACTIONS)
+				.toList();
 	}
 
 	private void addShutDownHook() {

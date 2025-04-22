@@ -1,6 +1,7 @@
 package com.openclassrooms.tourguide.service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Service;
@@ -45,25 +46,49 @@ public class RewardsService {
 			for(Attraction attraction : attractions) {
 				if(user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
 					if(nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction.attractionId, user.getUserId())));
 					}
 				}
 			}
 		}
 	}
-	
+
+	/**
+	 * Check if a location is within the proximity of an attraction
+	 * @param attraction the attraction
+	 * @param location the location
+	 * @return true if the location is within the proximity of the attraction, false otherwise
+	 */
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
-		return getDistance(attraction, location) > attractionProximityRange ? false : true;
+		return getDistance(attraction, location) <= attractionProximityRange;
 	}
-	
+
+	/**
+	 * Check if a visited location is near an attraction
+	 * @param visitedLocation the visited location
+	 * @param attraction the attraction
+	 * @return true if the visited location is near the attraction, false otherwise
+	 */
 	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
-		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
+		return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
 	}
-	
-	private int getRewardPoints(Attraction attraction, User user) {
-		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
+
+	/**
+	 * Return the rewards points for a user at an attraction
+	 * @param attractionId the attraction
+	 * @param userId the user
+	 * @return the rewards point
+	 */
+		public int getRewardPoints(UUID attractionId, UUID userId) {
+		return rewardsCentral.getAttractionRewardPoints(attractionId, userId);
 	}
-	
+
+	/**
+	 * Calculate the distance between two locations
+	 * @param loc1 location one
+	 * @param loc2 location two
+	 * @return the distance in miles
+	 */
 	public double getDistance(Location loc1, Location loc2) {
         double lat1 = Math.toRadians(loc1.latitude);
         double lon1 = Math.toRadians(loc1.longitude);
@@ -74,8 +99,7 @@ public class RewardsService {
                                + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));
 
         double nauticalMiles = 60 * Math.toDegrees(angle);
-        double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
-        return statuteMiles;
+        return STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
 	}
 
 }
