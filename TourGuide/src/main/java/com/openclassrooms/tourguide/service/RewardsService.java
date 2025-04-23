@@ -1,7 +1,6 @@
 package com.openclassrooms.tourguide.service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -55,7 +54,9 @@ public class RewardsService {
 			for(Attraction attraction : attractions) {
 				if(user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
 					if(nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction.attractionId, user.getUserId())));
+						user.addUserReward(
+								new UserReward(visitedLocation,attraction,getRewardPoints(attraction, user))
+						);
 					}
 				}
 			}
@@ -101,13 +102,21 @@ public class RewardsService {
 	}
 
 	/**
-	 * Return the rewards points for a user at an attraction
-	 * @param attractionId the attraction
-	 * @param userId the user
+	 * Get rewards points for an attraction
+	 * @param attraction the attraction
+	 * @param user the user
 	 * @return the rewards point
 	 */
-		public int getRewardPoints(UUID attractionId, UUID userId) {
-		return rewardsCentral.getAttractionRewardPoints(attractionId, userId);
+	public int getRewardPoints(Attraction attraction, User user) {
+		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
+	}
+
+	/**
+	 * Get RewardsCentral
+	 * @return the rewards central
+	 */
+	public RewardCentral getRewardsCentral() {
+		return rewardsCentral;
 	}
 
 	/**

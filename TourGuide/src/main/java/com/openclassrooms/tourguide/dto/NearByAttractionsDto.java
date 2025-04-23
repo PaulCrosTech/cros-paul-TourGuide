@@ -1,31 +1,29 @@
 package com.openclassrooms.tourguide.dto;
 
-
+import gpsUtil.location.Location;
 /**
  * This class represents a nearby attraction with its details.
  */
 public class NearByAttractionsDto {
 
     private String attractionName;
-    private double attractionLatitude;
-    private double attractionLongitude;
+    private Location attractionLocation;
+    private Location userLocation;
     private double distanceInMiles;
     private double rewardPoints;
 
     /**
      * Constructor
-     * @param attractionName the attraction name
-     * @param attractionLatitude the attraction latitude
-     * @param attractionLongitude the attraction longitude
-     * @param distanceInMiles the distance in miles
-     * @param rewardPoints the reward points
+     * @param attractionName attraction name
+     * @param attractionLocation attraction location
+     * @param userLocation user location
+     * @param distanceInMiles distance in miles between attraction and user
+     * @param rewardPoints reward points
      */
-    public NearByAttractionsDto(String attractionName, double attractionLatitude,
-                                double attractionLongitude, double distanceInMiles,
-                                double rewardPoints) {
+    public NearByAttractionsDto(String attractionName, Location attractionLocation, Location userLocation, double distanceInMiles, double rewardPoints) {
         this.attractionName = attractionName;
-        this.attractionLatitude = attractionLatitude;
-        this.attractionLongitude = attractionLongitude;
+        this.attractionLocation = attractionLocation;
+        this.userLocation = userLocation;
         this.distanceInMiles = distanceInMiles;
         this.rewardPoints = rewardPoints;
     }
@@ -38,20 +36,20 @@ public class NearByAttractionsDto {
         this.attractionName = attractionName;
     }
 
-    public double getAttractionLatitude() {
-        return attractionLatitude;
+    public Location getAttractionLocation() {
+        return attractionLocation;
     }
 
-    public void setAttractionLatitude(double attractionLatitude) {
-        this.attractionLatitude = attractionLatitude;
+    public void setAttractionLocation(Location attractionLocation) {
+        this.attractionLocation = attractionLocation;
     }
 
-    public double getAttractionLongitude() {
-        return attractionLongitude;
+    public Location getUserLocation() {
+        return userLocation;
     }
 
-    public void setAttractionLongitude(double attractionLongitude) {
-        this.attractionLongitude = attractionLongitude;
+    public void setUserLocation(Location userLocation) {
+        this.userLocation = userLocation;
     }
 
     public double getDistanceInMiles() {

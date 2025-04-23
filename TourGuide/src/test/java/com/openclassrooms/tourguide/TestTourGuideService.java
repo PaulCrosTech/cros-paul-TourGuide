@@ -93,9 +93,9 @@ public class TestTourGuideService {
 
 	/**
 	 * Test getNearByAttractions
-	 * Given : a user with a visited location
-	 * When : getNearByAttractions is called
-	 * Then : the size of the list is equal to NB_CLOSEST_ATTRACTIONS
+	 * Given: a user with a visited location
+	 * When: getNearByAttractions is called
+	 * Then: the size of the list is equal to NB_CLOSEST_ATTRACTIONS
 	 */
 	@Test
 	public void getNearbyAttractions() {

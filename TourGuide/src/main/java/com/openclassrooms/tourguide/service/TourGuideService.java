@@ -41,6 +41,7 @@ public class TourGuideService {
 	boolean testMode = true;
 	public static final int NB_CLOSEST_ATTRACTIONS = 5;
 	private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 5);
+
 	/**
 	 * Constructor
 	 * @param gpsUtil gpsUtil
@@ -148,14 +149,29 @@ public class TourGuideService {
 	public List<NearByAttractionsDto> getNearByAttractions(VisitedLocation visitedLocation) {
 
 		TreeMap<Double, NearByAttractionsDto> nearByAttractionsTreeMap = new TreeMap<>();
+		// Stream . sorted()
+//		List<Attraction> attractions = gpsUtil.getAttractions().stream()
+//				.sorted(
+//						Comparator.comparingDouble(
+//								attraction -> rewardsService.getDistance(attraction, visitedLocation.location)
+//						)
+//				)
+//				.limit(NB_CLOSEST_ATTRACTIONS)
+//				.toList();
+
 		for (Attraction attraction : gpsUtil.getAttractions()) {
+
 			double distanceInMiles = rewardsService.getDistance(attraction, visitedLocation.location);
+
+			Location attractionLocation = new Location(attraction.latitude,attraction.longitude);
+
 			NearByAttractionsDto nb = new NearByAttractionsDto(
 					attraction.attractionName,
-					attraction.latitude,
-					attraction.longitude,
+					attractionLocation,
+					visitedLocation.location,
 					distanceInMiles,
-					rewardsService.getRewardPoints(attraction.attractionId, visitedLocation.userId)
+//					rewardsService.getRewardPoints(attraction.attractionId, visitedLocation.userId)
+					rewardsService.getRewardsCentral().getAttractionRewardPoints(attraction.attractionId,visitedLocation.userId)
 			);
 			nearByAttractionsTreeMap.put(distanceInMiles,nb);
 		}
