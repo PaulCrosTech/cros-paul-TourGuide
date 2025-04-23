@@ -131,16 +131,15 @@ public class TourGuideService {
 
 	public void trackUsersLocation(List<User> users) {
 		List<CompletableFuture<VisitedLocation>> futures = new ArrayList<>();
-
-		for (User user : users) {
-			CompletableFuture<VisitedLocation> future = CompletableFuture.supplyAsync(
-					() -> {
-						System.out.println("trackUsersLocation Threa : " + Thread.currentThread().getName() + " - " + user.getUserName());
-						return trackUserLocation(user);
-					}, executorService
-			);
-			futures.add(future);
-		}
+		users.stream().map(
+				u -> CompletableFuture.supplyAsync(
+						() -> {
+							System.out.println("trackUsersLocation Thread : " + Thread.currentThread().getName() + " - " + u.getUserName());
+							return trackUserLocation(u);
+						}, executorService
+				)
+		)
+		.forEach(futures::add);
 
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 		executorService.shutdown();
