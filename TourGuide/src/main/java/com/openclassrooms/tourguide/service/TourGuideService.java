@@ -129,20 +129,22 @@ public class TourGuideService {
 
 	private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-	public CompletableFuture<VisitedLocation> trackUserLocationV2(User user) {
+	public void trackUsersLocation(List<User> users) {
+		List<CompletableFuture<VisitedLocation>> futures = new ArrayList<>();
 
-		return CompletableFuture.supplyAsync(
-				() -> {
-					System.out.println("trackUserLocationV2 user : " + Thread.currentThread().getName() + " - " + user.getUserName());
-					VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
-					user.addToVisitedLocations(visitedLocation);
-					rewardsService.calculateRewards(user);
-					return visitedLocation;
-				}, executorService
-		);
-	}
-	public void shutdownExecutor() {
+		for (User user : users) {
+			CompletableFuture<VisitedLocation> future = CompletableFuture.supplyAsync(
+					() -> {
+						System.out.println("trackUsersLocation Threa : " + Thread.currentThread().getName() + " - " + user.getUserName());
+						return trackUserLocation(user);
+					}, executorService
+			);
+			futures.add(future);
+		}
+
+		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 		executorService.shutdown();
+
 	}
 
 	/**
