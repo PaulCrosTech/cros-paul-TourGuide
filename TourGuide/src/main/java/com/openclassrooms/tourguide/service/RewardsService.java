@@ -2,7 +2,10 @@ package com.openclassrooms.tourguide.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.stereotype.Service;
 
@@ -24,7 +27,9 @@ public class RewardsService {
 	private int attractionProximityRange = 200;
 	private final GpsUtil gpsUtil;
 	private final RewardCentral rewardsCentral;
-	
+
+	private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 5);
+
 	public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
@@ -37,7 +42,11 @@ public class RewardsService {
 	public void setDefaultProximityBuffer() {
 		proximityBuffer = defaultProximityBuffer;
 	}
-	
+
+	/**
+	 * Calculate the rewards for a user
+	 * @param user the User
+	 */
 	public void calculateRewards(User user) {
 		List<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
 		List<Attraction> attractions = gpsUtil.getAttractions();
@@ -51,6 +60,24 @@ public class RewardsService {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Calculate the rewards for a list of users with ThreadPool
+	 * @param users List of users
+	 */
+	public void calculateUsersRewards(List<User> users) {
+		CompletableFuture<?>[] futures = users.stream()
+				.map(u -> CompletableFuture.supplyAsync(
+						() -> {
+							calculateRewards(u);
+							return null;
+						}, executorService)
+				)
+				.toArray(CompletableFuture[]::new);
+
+		CompletableFuture.allOf(futures).join();
+		executorService.shutdown();
 	}
 
 	/**

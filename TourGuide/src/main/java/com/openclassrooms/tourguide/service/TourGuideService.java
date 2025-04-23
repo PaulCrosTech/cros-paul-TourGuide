@@ -11,13 +11,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,7 +40,7 @@ public class TourGuideService {
 	public final Tracker tracker;
 	boolean testMode = true;
 	public static final int NB_CLOSEST_ATTRACTIONS = 5;
-
+	private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 5);
 	/**
 	 * Constructor
 	 * @param gpsUtil gpsUtil
@@ -69,9 +67,9 @@ public class TourGuideService {
 	}
 
 	/**
-	 * Get last visited location or the actual location
+	 * Get the last visited location or the actual location
 	 * @param user the user to get the location for
-	 * @return the VisitedLocation
+	 * @return visitedLocation
 	 */
 	public VisitedLocation getUserLocation(User user) {
 		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
@@ -116,9 +114,9 @@ public class TourGuideService {
 	}
 
 	/**
-	 * Track user location and add it to the user's visited locations
-	 * @param user the user to track
-	 * @return the VisitedLocation object containing the user's location
+	 * Track a user's location and add it to his visited locations
+	 * @param user the user
+	 * @return VisitedLocation
 	 */
 	public VisitedLocation trackUserLocation(User user) {
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
@@ -127,15 +125,15 @@ public class TourGuideService {
 		return visitedLocation;
 	}
 
-	private final ExecutorService executorService = Executors.newFixedThreadPool(10);
-
+	/**
+	 * Track user location of users using ThreadPool
+	 * @param users the list of users
+	 */
 	public void trackUsersLocation(List<User> users) {
 		CompletableFuture<?>[] futures = users.stream()
 				.map(u -> CompletableFuture.supplyAsync(
-						() -> {
-							System.out.println("trackUsersLocation Thread : " + Thread.currentThread().getName() + " - " + u.getUserName());
-							return trackUserLocation(u);
-						}, executorService))
+						() -> trackUserLocation(u), executorService)
+				)
 				.toArray(CompletableFuture[]::new);
 
 		CompletableFuture.allOf(futures).join();
