@@ -130,20 +130,16 @@ public class TourGuideService {
 	private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
 	public void trackUsersLocation(List<User> users) {
-		List<CompletableFuture<VisitedLocation>> futures = new ArrayList<>();
-		users.stream().map(
-				u -> CompletableFuture.supplyAsync(
+		CompletableFuture<?>[] futures = users.stream()
+				.map(u -> CompletableFuture.supplyAsync(
 						() -> {
 							System.out.println("trackUsersLocation Thread : " + Thread.currentThread().getName() + " - " + u.getUserName());
 							return trackUserLocation(u);
-						}, executorService
-				)
-		)
-		.forEach(futures::add);
+						}, executorService))
+				.toArray(CompletableFuture[]::new);
 
-		CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+		CompletableFuture.allOf(futures).join();
 		executorService.shutdown();
-
 	}
 
 	/**
