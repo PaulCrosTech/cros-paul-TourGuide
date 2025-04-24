@@ -7,6 +7,9 @@ import gpsUtil.GpsUtil;
 import rewardCentral.RewardCentral;
 import com.openclassrooms.tourguide.service.RewardsService;
 
+/**
+ * TourGuideModule is a Spring configuration class that defines beans for the application.
+ */
 @Configuration
 public class TourGuideModule {
 	

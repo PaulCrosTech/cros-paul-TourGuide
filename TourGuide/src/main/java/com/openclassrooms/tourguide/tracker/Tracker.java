@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 
+/**
+ * Tracker is a thread that tracks the location of users every 5 minutes.
+ */
 public class Tracker extends Thread {
 	private Logger logger = LoggerFactory.getLogger(Tracker.class);
 	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
@@ -33,6 +36,9 @@ public class Tracker extends Thread {
 		executorService.shutdownNow();
 	}
 
+	/**
+	 * Run method of the Tracker thread
+	 */
 	@Override
 	public void run() {
 		StopWatch stopWatch = new StopWatch();

@@ -1,5 +1,8 @@
 package com.openclassrooms.tourguide.user;
 
+/**
+ * UserPreferences class
+ */
 public class UserPreferences {
 	
 	private int attractionProximity = Integer.MAX_VALUE;

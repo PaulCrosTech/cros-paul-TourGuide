@@ -3,6 +3,9 @@ package com.openclassrooms.tourguide.user;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.VisitedLocation;
 
+/**
+ * UserReward class
+ */
 public class UserReward {
 
 	public final VisitedLocation visitedLocation;

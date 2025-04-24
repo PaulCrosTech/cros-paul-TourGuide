@@ -16,6 +16,9 @@ import com.openclassrooms.tourguide.user.UserReward;
 
 import tripPricer.Provider;
 
+/**
+ * TourGuideController is a REST controller that handles requests related to the Tour Guide application.
+ */
 @RestController
 public class TourGuideController {
 

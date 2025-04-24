@@ -63,6 +63,11 @@ public class TourGuideService {
 		addShutDownHook();
 	}
 
+	/**
+	 * Get the user rewards
+	 * @param user the user
+	 * @return a list of user rewards
+	 */
 	public List<UserReward> getUserRewards(User user) {
 		return user.getUserRewards();
 	}
@@ -149,16 +154,6 @@ public class TourGuideService {
 	public List<NearByAttractionsDto> getNearByAttractions(VisitedLocation visitedLocation) {
 
 		TreeMap<Double, NearByAttractionsDto> nearByAttractionsTreeMap = new TreeMap<>();
-		// Stream . sorted()
-//		List<Attraction> attractions = gpsUtil.getAttractions().stream()
-//				.sorted(
-//						Comparator.comparingDouble(
-//								attraction -> rewardsService.getDistance(attraction, visitedLocation.location)
-//						)
-//				)
-//				.limit(NB_CLOSEST_ATTRACTIONS)
-//				.toList();
-
 		for (Attraction attraction : gpsUtil.getAttractions()) {
 
 			double distanceInMiles = rewardsService.getDistance(attraction, visitedLocation.location);
@@ -170,7 +165,6 @@ public class TourGuideService {
 					attractionLocation,
 					visitedLocation.location,
 					distanceInMiles,
-//					rewardsService.getRewardPoints(attraction.attractionId, visitedLocation.userId)
 					rewardsService.getRewardsCentral().getAttractionRewardPoints(attraction.attractionId,visitedLocation.userId)
 			);
 			nearByAttractionsTreeMap.put(distanceInMiles,nb);
@@ -192,15 +186,17 @@ public class TourGuideService {
 	}
 
 	/**********************************************************************************
-	 * 
 	 * Methods Below: For Internal Testing
-	 * 
 	 **********************************************************************************/
 	private static final String tripPricerApiKey = "test-server-api-key";
 	// Database connection will be used for external users, but for testing purposes
 	// internal users are provided and stored in memory
 	private final Map<String, User> internalUserMap = new HashMap<>();
 
+	/**
+	 * Initialize internal users
+	 * This method creates a number of internal users and adds them to the internalUserMap
+	 */
 	private void initializeInternalUsers() {
 		IntStream.range(0, InternalTestHelper.getInternalUserNumber()).forEach(i -> {
 			String userName = "internalUser" + i;
@@ -214,6 +210,11 @@ public class TourGuideService {
 		logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
 	}
 
+
+	/**
+	 * Generate a random user location history
+	 * @param user the user
+	 */
 	private void generateUserLocationHistory(User user) {
 		IntStream.range(0, 3).forEach(i -> {
 			user.addToVisitedLocations(new VisitedLocation(user.getUserId(),
@@ -221,18 +222,30 @@ public class TourGuideService {
 		});
 	}
 
+	/**
+	 * Generate a random longitude
+	 * @return a random longitude
+	 */
 	private double generateRandomLongitude() {
 		double leftLimit = -180;
 		double rightLimit = 180;
 		return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
 	}
 
+	/**
+	 * Generate a random latitude
+	 * @return a random latitude
+	 */
 	private double generateRandomLatitude() {
 		double leftLimit = -85.05112878;
 		double rightLimit = 85.05112878;
 		return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
 	}
 
+	/**
+	 * Generate a random time
+	 * @return a random time
+	 */
 	private Date getRandomTime() {
 		LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
 		return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
