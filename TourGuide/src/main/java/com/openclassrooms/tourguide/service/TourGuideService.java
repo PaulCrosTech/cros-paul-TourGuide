@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -153,27 +154,29 @@ public class TourGuideService {
 	 */
 	public List<NearByAttractionsDto> getNearByAttractions(VisitedLocation visitedLocation) {
 
-		TreeMap<Double, NearByAttractionsDto> nearByAttractionsTreeMap = new TreeMap<>();
-		for (Attraction attraction : gpsUtil.getAttractions()) {
+		return gpsUtil.getAttractions()
+				.parallelStream() // Utilisation d'un flux parallèle
+				.map(attraction -> {
 
-			double distanceInMiles = rewardsService.getDistance(attraction, visitedLocation.location);
+					double distanceInMiles = rewardsService.getDistance(attraction, visitedLocation.location);
 
-			Location attractionLocation = new Location(attraction.latitude,attraction.longitude);
+					Location attractionLocation = new Location(attraction.latitude, attraction.longitude);
 
-			NearByAttractionsDto nb = new NearByAttractionsDto(
-					attraction.attractionName,
-					attractionLocation,
-					visitedLocation.location,
-					distanceInMiles,
-					rewardsService.getRewardsCentral().getAttractionRewardPoints(attraction.attractionId,visitedLocation.userId)
-			);
-			nearByAttractionsTreeMap.put(distanceInMiles,nb);
-		}
+					int rewardPoints = rewardsService.getRewardsCentral()
+							.getAttractionRewardPoints(attraction.attractionId, visitedLocation.userId);
 
-		return nearByAttractionsTreeMap
-				.values()
-				.stream()
+					return new AbstractMap.SimpleEntry<>(distanceInMiles, new NearByAttractionsDto(
+							attraction.attractionName,
+							attractionLocation,
+							visitedLocation.location,
+							distanceInMiles,
+							rewardPoints
+					));
+
+				})
+				.sorted(Map.Entry.comparingByKey())
 				.limit(NB_CLOSEST_ATTRACTIONS)
+				.map(Map.Entry::getValue)
 				.toList();
 	}
 
