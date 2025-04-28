@@ -21,7 +21,7 @@ jobs:
                   cache: maven
 
             - name: Test and build
-              run: mvn --batch-mode --update-snapshots verify
+              run: mvn --batch-mode --update-snapshots verify --file ./TourGuide/pom.xml
 
             - name: Move Jar to staging directory
               run: mkdir staging && cp target/*.jar staging
