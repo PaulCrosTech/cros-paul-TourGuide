@@ -30,7 +30,7 @@ jobs:
               run: mvn --batch-mode --update-snapshots verify --file ./TourGuide/pom.xml
 
             - name: Move Jar to staging directory
-              run: mkdir staging && cp target/*.jar staging
+              run: mkdir ./staging && cp ./target/*.jar ./staging
 
             - name: Upload artifact
               uses: actions/upload-artifact@v4

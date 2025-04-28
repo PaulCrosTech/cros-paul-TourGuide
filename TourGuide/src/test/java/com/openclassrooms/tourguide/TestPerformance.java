@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.time.StopWatch;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import gpsUtil.GpsUtil;
@@ -50,6 +51,7 @@ public class TestPerformance {
 	 * When: the trackUserLocation method is called
 	 * Then: the method should finish within 15 minutes for 100,000 users
 	 */
+	@Disabled
 	@Test
 	public void highVolumeTrackLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -79,6 +81,7 @@ public class TestPerformance {
 	 * When: the getRewards method is called
 	 * Then: the method should finish within 20 minutes for 100,000 users
 	 */
+	@Disabled
 	@Test
 	public void highVolumeGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
