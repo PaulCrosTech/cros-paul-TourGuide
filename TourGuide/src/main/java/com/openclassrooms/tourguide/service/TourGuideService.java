@@ -81,7 +81,7 @@ public class TourGuideService {
         // TODO : Code revue, new Thread Version
 
         VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
-                : trackUserLocation(user).join();
+                : trackUserLocation(user);
         return visitedLocation;
     }
 
@@ -124,23 +124,18 @@ public class TourGuideService {
         return providers;
     }
 
+
     /**
      * Track a user's location and add it to his visited locations
      *
      * @param user the user
-     * @return a CompletableFuture of VisitedLocation
+     * @return a VisitedLocation
      */
-    // TODO : Code revue, new Thread Version
-    public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
-
-        return CompletableFuture.supplyAsync(
-                        () -> gpsUtil.getUserLocation(user.getUserId())
-                        , executorService)
-                .thenApplyAsync((visitedLocation) -> {
-                    user.addToVisitedLocations(visitedLocation);
-                    rewardsService.calculateRewards(user);
-                    return visitedLocation;
-                }, executorService);
+    public VisitedLocation trackUserLocation(User user) {
+        VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+        user.addToVisitedLocations(visitedLocation);
+        rewardsService.calculateRewards(user);
+        return visitedLocation;
     }
 
     /**
@@ -149,11 +144,55 @@ public class TourGuideService {
      * @param users the list of users
      */
     public void trackUsersLocation(List<User> users) {
-        List<CompletableFuture<VisitedLocation>> futures = users.stream()
-                .map(this::trackUserLocation)
-                .toList();
+
+        List<CompletableFuture<VisitedLocation>> futures = new ArrayList<>();
+
+        users.forEach((user) -> {
+            futures.add(
+                    CompletableFuture.supplyAsync(
+                            () -> trackUserLocation(user)
+                            , executorService)
+            );
+        });
+
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+//        List<VisitedLocation> futures = users.stream()
+//                .map(this::trackUserLocation)
+//                .toList();
+//        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
+
+//    /**
+//     * Track a user's location and add it to his visited locations
+//     *
+//     * @param user the user
+//     * @return a CompletableFuture of VisitedLocation
+//     */
+//    // TODO : Code revue, new Thread Version
+//    public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
+//
+//        return CompletableFuture.supplyAsync(
+//                        () -> gpsUtil.getUserLocation(user.getUserId())
+//                        , executorService)
+//                .thenApplyAsync((visitedLocation) -> {
+//                    user.addToVisitedLocations(visitedLocation);
+//                    rewardsService.calculateRewards(user);
+//                    return visitedLocation;
+//                }, executorService);
+//    }
+
+//    /**
+//     * Track a list of users' locations
+//     *
+//     * @param users the list of users
+//     */
+//    public void trackUsersLocation(List<User> users) {
+//        List<CompletableFuture<VisitedLocation>> futures = users.stream()
+//                .map(this::trackUserLocation)
+//                .toList();
+//        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+//    }
 
     /**
      * Get NB_CLOSEST_ATTRACTIONS closest attractions to the user no matter how far away they are

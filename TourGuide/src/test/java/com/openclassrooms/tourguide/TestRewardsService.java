@@ -33,7 +33,7 @@ public class TestRewardsService {
         Attraction attraction = gpsUtil.getAttractions().get(0);
         user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction, new Date()));
         // TODO : Code revue, new Thread Version
-        tourGuideService.trackUserLocation(user).join();
+        tourGuideService.trackUserLocation(user);
         List<UserReward> userRewards = user.getUserRewards();
         tourGuideService.tracker.stopTracking();
         assertTrue(userRewards.size() == 1);
