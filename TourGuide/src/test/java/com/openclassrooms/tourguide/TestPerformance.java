@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.time.StopWatch;
@@ -56,7 +55,7 @@ public class TestPerformance {
     public void highVolumeTrackLocation() {
         GpsUtil gpsUtil = new GpsUtil();
         RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-        InternalTestHelper.setInternalUserNumber(1);
+        InternalTestHelper.setInternalUserNumber(5000);
         TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
         List<User> allUsers = new ArrayList<>();
@@ -66,11 +65,7 @@ public class TestPerformance {
         stopWatch.start();
 
         // TODO : Code revue, new Thread Version
-        List<CompletableFuture<VisitedLocation>> futures = allUsers.stream()
-                .map(user -> tourGuideService.trackUserLocation(user))
-                .toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        tourGuideService.trackUsersLocation(allUsers);
 
         stopWatch.stop();
         tourGuideService.tracker.stopTracking();
@@ -91,7 +86,7 @@ public class TestPerformance {
         GpsUtil gpsUtil = new GpsUtil();
         RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 
-        InternalTestHelper.setInternalUserNumber(10);
+        InternalTestHelper.setInternalUserNumber(10000);
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
@@ -102,11 +97,7 @@ public class TestPerformance {
         allUsers.forEach(u -> u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction, new Date())));
 
         // TODO : Code revue, new Thread Version
-        List<CompletableFuture<Void>> futures = allUsers.stream()
-                .map(user -> rewardsService.calculateRewards(user))
-                .toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        rewardsService.calculateUsersRewards(allUsers);
 
         for (User user : allUsers) {
             assertFalse(user.getUserRewards().isEmpty());

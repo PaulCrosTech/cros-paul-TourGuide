@@ -54,15 +54,7 @@ public class Tracker extends Thread {
             logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
             stopWatch.start();
             // TODO : Code revue, new Thread Version
-
-//			users.forEach(u -> {
-//				tourGuideService.trackUserLocation(u);
-//            });
-            List<CompletableFuture<VisitedLocation>> futures = users.stream()
-                    .map(user -> tourGuideService.trackUserLocation(user))
-                    .toList();
-
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            tourGuideService.trackUsersLocation(users);
 
             stopWatch.stop();
             logger.debug("Tracker Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");

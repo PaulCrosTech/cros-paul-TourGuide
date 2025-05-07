@@ -1,5 +1,6 @@
 package com.openclassrooms.tourguide.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -60,26 +61,37 @@ public class RewardsService {
      * @param user the User
      */
     // TODO : Code revue, new Thread Version
-    public CompletableFuture<Void> calculateRewards(User user) {
+    public void calculateRewards(User user) {
+        List<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
+        List<Attraction> attractions = gpsUtil.getAttractions();
 
-        return CompletableFuture.runAsync(() -> {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-            CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
-            List<Attraction> attractions = gpsUtil.getAttractions();
+        for (VisitedLocation visitedLocation : userLocations) {
+            for (Attraction attraction : attractions) {
+                if (user.getUserRewards().stream().noneMatch(r -> r.attraction.attractionName.equals(attraction.attractionName))) {
+                    if (nearAttraction(visitedLocation, attraction)) {
 
-            userLocations.forEach(visitedLocation -> {
+                        futures.add(CompletableFuture.runAsync(() -> {
+                            user.addUserReward(
+                                    new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user))
+                            );
+                        }, executorService));
+                    }
+                }
+            }
+        }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
 
-                attractions.stream()
-                        .filter(attraction ->
-                                user.getUserRewards().stream()
-                                        .noneMatch(userReward -> userReward.attraction.attractionName.equals(attraction.attractionName)) &&
-                                        nearAttraction(visitedLocation, attraction)
-                        ).forEach(attraction -> {
-                            UserReward newUserReward = new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user));
-                            user.addUserReward(newUserReward);
-                        });
-            });
-        }, executorService);
+    /**
+     * Calculate the rewards for a list of users with threads
+     *
+     * @param users List of users
+     */
+    // TODO : Code revue, new Thread Version
+    public void calculateUsersRewards(List<User> users) {
+        users.parallelStream().forEach(this::calculateRewards);
     }
 
     /**

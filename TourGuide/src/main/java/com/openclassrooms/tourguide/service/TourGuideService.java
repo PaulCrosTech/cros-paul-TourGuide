@@ -79,14 +79,10 @@ public class TourGuideService {
      */
     public VisitedLocation getUserLocation(User user) {
         // TODO : Code revue, new Thread Version
-        try {
-            VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
-                    : trackUserLocation(user).get();
-            return visitedLocation;
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error getting user location: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
+
+        VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
+                : trackUserLocation(user).join();
+        return visitedLocation;
     }
 
     /**
@@ -137,16 +133,26 @@ public class TourGuideService {
     // TODO : Code revue, new Thread Version
     public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
 
-        return CompletableFuture.supplyAsync(() -> {
-                    VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
-                    return visitedLocation;
-                }, executorService)
+        return CompletableFuture.supplyAsync(
+                        () -> gpsUtil.getUserLocation(user.getUserId())
+                        , executorService)
                 .thenApplyAsync((visitedLocation) -> {
                     user.addToVisitedLocations(visitedLocation);
-                    // TODO : Code revue, new Thread Version
-                    rewardsService.calculateRewards(user).join();
+                    rewardsService.calculateRewards(user);
                     return visitedLocation;
                 }, executorService);
+    }
+
+    /**
+     * Track a list of users' locations
+     *
+     * @param users the list of users
+     */
+    public void trackUsersLocation(List<User> users) {
+        List<CompletableFuture<VisitedLocation>> futures = users.stream()
+                .map(this::trackUserLocation)
+                .toList();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     /**

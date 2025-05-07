@@ -58,7 +58,7 @@ public class TestRewardsService {
 
         // TODO : Code revue, new Thread Version
         // Ici c'est lent je trouve, faudrait voir si c'était lent aussi avec ma facon de faire.
-        rewardsService.calculateRewards(tourGuideService.getAllUsers().get(0)).join();
+        rewardsService.calculateRewards(tourGuideService.getAllUsers().get(0));
         List<UserReward> userRewards = tourGuideService.getUserRewards(tourGuideService.getAllUsers().get(0));
         tourGuideService.tracker.stopTracking();
 
