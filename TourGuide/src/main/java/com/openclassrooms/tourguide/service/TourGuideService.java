@@ -37,7 +37,7 @@ public class TourGuideService {
     public final Tracker tracker;
     boolean testMode = true;
     public static final int NB_CLOSEST_ATTRACTIONS = 5;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 5);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(100);
 
     /**
      * Constructor
@@ -78,8 +78,6 @@ public class TourGuideService {
      * @return visitedLocation
      */
     public VisitedLocation getUserLocation(User user) {
-        // TODO : Code revue, new Thread Version
-
         VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
                 : trackUserLocation(user);
         return visitedLocation;
@@ -139,7 +137,7 @@ public class TourGuideService {
     }
 
     /**
-     * Track a list of users' locations
+     * Track a list of users' locations using threads
      *
      * @param users the list of users
      */
@@ -156,43 +154,7 @@ public class TourGuideService {
         });
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-//        List<VisitedLocation> futures = users.stream()
-//                .map(this::trackUserLocation)
-//                .toList();
-//        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
-
-//    /**
-//     * Track a user's location and add it to his visited locations
-//     *
-//     * @param user the user
-//     * @return a CompletableFuture of VisitedLocation
-//     */
-//    // TODO : Code revue, new Thread Version
-//    public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
-//
-//        return CompletableFuture.supplyAsync(
-//                        () -> gpsUtil.getUserLocation(user.getUserId())
-//                        , executorService)
-//                .thenApplyAsync((visitedLocation) -> {
-//                    user.addToVisitedLocations(visitedLocation);
-//                    rewardsService.calculateRewards(user);
-//                    return visitedLocation;
-//                }, executorService);
-//    }
-
-//    /**
-//     * Track a list of users' locations
-//     *
-//     * @param users the list of users
-//     */
-//    public void trackUsersLocation(List<User> users) {
-//        List<CompletableFuture<VisitedLocation>> futures = users.stream()
-//                .map(this::trackUserLocation)
-//                .toList();
-//        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-//    }
 
     /**
      * Get NB_CLOSEST_ATTRACTIONS closest attractions to the user no matter how far away they are

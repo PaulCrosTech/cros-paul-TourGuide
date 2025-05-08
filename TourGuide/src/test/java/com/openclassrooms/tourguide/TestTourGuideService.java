@@ -27,7 +27,6 @@ public class TestTourGuideService {
         TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
         User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-        // TODO : Code revue, new Thread Version
         VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
         tourGuideService.tracker.stopTracking();
         assertTrue(visitedLocation.userId.equals(user.getUserId()));
@@ -84,7 +83,6 @@ public class TestTourGuideService {
         TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
         User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-        // TODO : Code revue, new Thread Version
         VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
 
         tourGuideService.tracker.stopTracking();
@@ -108,7 +106,6 @@ public class TestTourGuideService {
         TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
         User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-        // TODO : Code revue, new Thread Version
         VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
 
         // When

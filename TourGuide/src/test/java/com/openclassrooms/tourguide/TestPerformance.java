@@ -64,7 +64,6 @@ public class TestPerformance {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        // TODO : Code revue, new Thread Version
         tourGuideService.trackUsersLocation(allUsers);
 
         stopWatch.stop();
@@ -96,7 +95,6 @@ public class TestPerformance {
         List<User> allUsers = tourGuideService.getAllUsers();
         allUsers.forEach(u -> u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction, new Date())));
 
-        // TODO : Code revue, new Thread Version
         rewardsService.calculateUsersRewards(allUsers);
 
         for (User user : allUsers) {

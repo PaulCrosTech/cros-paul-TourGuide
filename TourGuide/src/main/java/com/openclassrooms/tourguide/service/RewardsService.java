@@ -34,7 +34,7 @@ public class RewardsService {
     private final GpsUtil gpsUtil;
     private final RewardCentral rewardsCentral;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 5);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(100);
 
     /**
      * Constructor
@@ -60,7 +60,6 @@ public class RewardsService {
      *
      * @param user the User
      */
-    // TODO : Code revue, new Thread Version
     public void calculateRewards(User user) {
         List<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
         List<Attraction> attractions = gpsUtil.getAttractions();
@@ -89,7 +88,6 @@ public class RewardsService {
      *
      * @param users List of users
      */
-    // TODO : Code revue, new Thread Version
     public void calculateUsersRewards(List<User> users) {
         users.parallelStream().forEach(this::calculateRewards);
     }
