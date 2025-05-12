@@ -136,24 +136,37 @@ public class TourGuideService {
         return visitedLocation;
     }
 
+
     /**
      * Track a list of users' locations using threads
      *
-     * @param users the list of users
+     * @param users the list of users to track
+     * @return a map of userName to VisitedLocation
      */
-    public void trackUsersLocation(List<User> users) {
+    public Map<String, VisitedLocation> trackUsersLocation(List<User> users) {
 
-        List<CompletableFuture<VisitedLocation>> futures = new ArrayList<>();
+        Map<String, CompletableFuture<VisitedLocation>> futures = new HashMap<>();
 
         users.forEach((user) -> {
-            futures.add(
+            futures.put(
+                    user.getUserName(),
                     CompletableFuture.supplyAsync(
                             () -> trackUserLocation(user)
                             , executorService)
             );
         });
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        CompletableFuture.allOf(futures.values().toArray(new CompletableFuture[0])).join();
+
+        return futures
+                .entrySet()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue().join()
+                        )
+                );
     }
 
     /**
