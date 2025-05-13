@@ -13,15 +13,15 @@ hotels and show tickets. The application is built with Spring Boot and provides 
 
 ## Installing prerequisites
 
-1.Install Java:
+1.Install Java:  
 https://docs.oracle.com/en/java/javase/21/install/overview-jdk-installation.html
 
 2.Install Maven:  
 https://maven.apache.org/install.html
 
-## Installing external services
+## Installing dependencies
 
-This application needs three external services: gpsUtil, rewardCentral, and tripPricer.
+This application needs three dependencies: gpsUtil, rewardCentral, and tripPricer.
 You have to install them locally in your Maven repository.  
 Go to the folder that contains the pom.xml file and execute the below command :
 
