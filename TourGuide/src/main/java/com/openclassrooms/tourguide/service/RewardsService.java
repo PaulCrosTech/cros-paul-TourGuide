@@ -34,6 +34,8 @@ public class RewardsService {
     private final GpsUtil gpsUtil;
     private final RewardCentral rewardsCentral;
 
+    private volatile List<Attraction> cachedAttractions = null;
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(100);
 
     /**
@@ -62,7 +64,7 @@ public class RewardsService {
      */
     public void calculateRewards(User user) {
         List<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
-        List<Attraction> attractions = gpsUtil.getAttractions();
+        List<Attraction> attractions = getCachedAttractions();
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -81,6 +83,24 @@ public class RewardsService {
             }
         }
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
+    /**
+     * Get the cached attractions
+     *
+     * @return the list of attractions
+     */
+    private List<Attraction> getCachedAttractions() {
+        if (cachedAttractions == null) {
+            // Synchronized block to ensure thread safety
+            synchronized (this) {
+                if (cachedAttractions == null) {
+                    System.out.println("----> Fetching attractions from database");
+                    cachedAttractions = gpsUtil.getAttractions();
+                }
+            }
+        }
+        return cachedAttractions;
     }
 
     /**
