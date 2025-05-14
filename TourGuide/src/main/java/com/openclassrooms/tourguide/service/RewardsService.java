@@ -92,10 +92,8 @@ public class RewardsService {
      */
     private List<Attraction> getCachedAttractions() {
         if (cachedAttractions == null) {
-            // Synchronized block to ensure thread safety
             synchronized (this) {
                 if (cachedAttractions == null) {
-                    System.out.println("----> Fetching attractions from database");
                     cachedAttractions = gpsUtil.getAttractions();
                 }
             }
